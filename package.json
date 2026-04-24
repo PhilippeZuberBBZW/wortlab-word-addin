@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite --host localhost --port 3000",
     "build": "tsc && vite build",
-    "preview": "vite preview --host localhost --port 4173"
+    "preview": "vite preview --host localhost --port 4173",
+    "certs:install": "office-addin-dev-certs install"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/office-js": "^1.0.417",
     "@vitejs/plugin-basic-ssl": "^1.2.0",
+    "office-addin-dev-certs": "^2.0.7",
+    "office-addin-manifest": "^2.1.3",
     "typescript": "^5.7.3",
     "vite": "^6.2.0"
   }

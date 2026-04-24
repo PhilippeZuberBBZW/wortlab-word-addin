@@ -10,8 +10,8 @@
   <DefaultLocale>de-CH</DefaultLocale>
   <DisplayName DefaultValue="Wortlab fuer Word" />
   <Description DefaultValue="Suche Woerter und Bilder aus Wortlab direkt in Microsoft Word." />
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.svg" />
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.svg" />
+  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.png" />
   <SupportUrl DefaultValue="https://wortlab.ch" />
   <AppDomains>
     <AppDomain>https://localhost:3000</AppDomain>
@@ -67,9 +67,9 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16" DefaultValue="https://localhost:3000/assets/icon-16.svg" />
-        <bt:Image id="Icon.32" DefaultValue="https://localhost:3000/assets/icon-32.svg" />
-        <bt:Image id="Icon.80" DefaultValue="https://localhost:3000/assets/icon-80.svg" />
+        <bt:Image id="Icon.16" DefaultValue="https://localhost:3000/assets/icon-16.png" />
+        <bt:Image id="Icon.32" DefaultValue="https://localhost:3000/assets/icon-32.png" />
+        <bt:Image id="Icon.80" DefaultValue="https://localhost:3000/assets/icon-80.png" />
       </bt:Images>
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://wortlab.ch" />

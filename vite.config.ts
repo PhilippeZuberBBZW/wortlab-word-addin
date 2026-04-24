@@ -1,16 +1,19 @@
 import { defineConfig } from 'vite';
-import basicSsl from '@vitejs/plugin-basic-ssl';
+import { getHttpsServerOptions } from 'office-addin-dev-certs';
 
-export default defineConfig({
-  plugins: [basicSsl()],
-  server: {
-    host: 'localhost',
-    port: 3000,
-    https: true
-  },
-  preview: {
-    host: 'localhost',
-    port: 4173,
-    https: true
-  }
+export default defineConfig(async () => {
+  const httpsOptions = await getHttpsServerOptions();
+
+  return {
+    server: {
+      host: 'localhost',
+      port: 3000,
+      https: httpsOptions
+    },
+    preview: {
+      host: 'localhost',
+      port: 4173,
+      https: httpsOptions
+    }
+  };
 });
