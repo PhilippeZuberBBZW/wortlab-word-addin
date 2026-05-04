@@ -356,8 +356,8 @@ async function saveCurrentSelectionToCollection(): Promise<void> {
   }
 
   setStatus('Sammlung wird gespeichert ...');
-  await updateCollection(state.config, id, name, Array.from(state.selectedIds));
-  state.collections = await listCollections(state.config);
+  const updated = await updateCollection(state.config, id, name, Array.from(state.selectedIds));
+  state.collections = state.collections.map((c) => (c.id === id ? updated : c));
   state.activeCollectionId = id;
   setStatus('Sammlung aktualisiert.', 'success');
 }
@@ -371,7 +371,7 @@ async function createNewCollection(): Promise<void> {
 
   setStatus('Sammlung wird erstellt ...');
   const collection = await createCollection(state.config, name, Array.from(state.selectedIds));
-  state.collections = await listCollections(state.config);
+  state.collections = [...state.collections, collection];
   state.activeCollectionId = collection.id;
   setStatus(`Sammlung \"${collection.name}\" erstellt.`, 'success');
 }
