@@ -77,17 +77,21 @@ function normalizeBaseUrl(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
-async function request<T>(config: AppConfig, path: string, init?: RequestInit): Promise<T> {
+async function authorizedFetch(config: AppConfig, path: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers ?? {});
   headers.set('Authorization', `Bearer ${config.token}`);
   if (init?.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`${normalizeBaseUrl(config.apiBaseUrl)}${path}`, {
+  return fetch(`${normalizeBaseUrl(config.apiBaseUrl)}${path}`, {
     ...init,
     headers
   });
+}
+
+async function request<T>(config: AppConfig, path: string, init?: RequestInit): Promise<T> {
+  const response = await authorizedFetch(config, path, init);
 
   if (!response.ok) {
     let message = `${response.status} ${response.statusText}`;
@@ -194,4 +198,29 @@ export async function updateCollection(config: AppConfig, id: number, name: stri
 export async function getWordDetails(config: AppConfig, id: number): Promise<WordDetails> {
   const result = await request<{ data: WordDetails }>(config, `/word_details.php?id=${id}`);
   return result.data;
+}
+
+export async function fetchWordImageBlob(
+  config: AppConfig,
+  id: number,
+  imageMode: 'standard' | 'ausmalbild'
+): Promise<Blob> {
+  const response = await authorizedFetch(config, `/word_image.php?id=${id}&image_mode=${imageMode}`);
+
+  if (!response.ok) {
+    let message = `${response.status} ${response.statusText}`;
+    const contentType = response.headers.get('Content-Type') ?? '';
+    if (contentType.includes('application/json')) {
+      try {
+        const body = await response.json();
+        if (body?.error) {
+          message = `${message}: ${body.error}`;
+        }
+      } catch {
+      }
+    }
+    throw new Error(message);
+  }
+
+  return response.blob();
 }

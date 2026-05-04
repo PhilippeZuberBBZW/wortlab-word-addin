@@ -1,6 +1,7 @@
 import './styles.css';
 import {
   createCollection,
+  fetchWordImageBlob,
   getCollection,
   getEntitlement,
   getFilterOptions,
@@ -22,6 +23,10 @@ interface AppState {
   categoryOptions: FilterOption[];
   semanticOptions: FilterOption[];
   alterOptions: FilterOption[];
+  searchText: string;
+  notLetter: string;
+  lauttreuOnly: boolean;
+  imageMode: 'standard' | 'ausmalbild';
   results: WordSearchItem[];
   collections: CollectionItem[];
   selectedIds: Set<number>;
@@ -43,6 +48,10 @@ const state: AppState = {
   categoryOptions: [],
   semanticOptions: [],
   alterOptions: [],
+  searchText: '',
+  notLetter: '',
+  lauttreuOnly: false,
+  imageMode: 'standard',
   results: [],
   collections: [],
   selectedIds: new Set<number>(),
@@ -81,6 +90,13 @@ function selectedImageMode(): 'standard' | 'ausmalbild' {
   return select?.value === 'ausmalbild' ? 'ausmalbild' : 'standard';
 }
 
+function syncSearchStateFromForm(): void {
+  state.searchText = document.querySelector<HTMLInputElement>('#searchText')?.value ?? state.searchText;
+  state.notLetter = document.querySelector<HTMLInputElement>('#notLetter')?.value ?? state.notLetter;
+  state.lauttreuOnly = document.querySelector<HTMLInputElement>('#lauttreu')?.checked ?? state.lauttreuOnly;
+  state.imageMode = selectedImageMode();
+}
+
 function configFromForm(): AppConfig {
   const apiBaseUrl = (document.querySelector<HTMLInputElement>('#apiBaseUrl')?.value ?? '').trim();
   const token = (document.querySelector<HTMLTextAreaElement>('#accessToken')?.value ?? '').trim();
@@ -110,7 +126,7 @@ function renderResults(): string {
       const imageUrl = getImageUrl(item);
       const checked = state.selectedIds.has(item.id) ? 'checked' : '';
       const image = imageUrl
-        ? `<img class="result-preview" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name)}">`
+        ? `<img class="result-preview" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name)}" draggable="false">`
         : '<div class="empty">Kein Bild verfuegbar.</div>';
 
       return `
@@ -205,22 +221,22 @@ function render(): void {
         <div class="grid">
           <div class="field">
             <label for="searchText">Suchtext</label>
-            <input id="searchText" type="text" placeholder="z. B. *le oder ba*">
+            <input id="searchText" type="text" value="${escapeHtml(state.searchText)}" placeholder="z. B. *le oder ba*">
           </div>
           <div class="grid two">
             <div class="field">
               <label for="notLetter">Buchstabe ausschliessen</label>
-              <input id="notLetter" type="text" maxlength="10" placeholder="z. B. r">
+              <input id="notLetter" type="text" value="${escapeHtml(state.notLetter)}" maxlength="10" placeholder="z. B. r">
             </div>
             <div class="field">
               <label for="imageMode">Bildmodus</label>
               <select id="imageMode">
-                <option value="standard">Standard</option>
-                <option value="ausmalbild">Ausmalbild</option>
+                <option value="standard" ${state.imageMode === 'standard' ? 'selected' : ''}>Standard</option>
+                <option value="ausmalbild" ${state.imageMode === 'ausmalbild' ? 'selected' : ''}>Ausmalbild</option>
               </select>
             </div>
           </div>
-          <label class="checkline"><input id="lauttreu" type="checkbox"> <span>Lauttreu</span></label>
+          <label class="checkline"><input id="lauttreu" type="checkbox" ${state.lauttreuOnly ? 'checked' : ''}> <span>Lauttreu</span></label>
           <div class="grid two">
             <div class="field">
               <span class="label">Wortarten</span>
@@ -279,16 +295,17 @@ async function connect(): Promise<void> {
 async function runSearch(): Promise<void> {
   state.config = configFromForm();
   saveConfig(state.config);
+  syncSearchStateFromForm();
   setStatus('Suche laeuft ...');
 
   const response = await searchWords(state.config, {
-    search_text: document.querySelector<HTMLInputElement>('#searchText')?.value ?? '',
-    not_letter: document.querySelector<HTMLInputElement>('#notLetter')?.value ?? '',
+    search_text: state.searchText,
+    not_letter: state.notLetter,
     category: selectedValues('category'),
     semantic: selectedValues('semantic'),
     alter: selectedValues('alter'),
-    lauttreu: document.querySelector<HTMLInputElement>('#lauttreu')?.checked ?? false,
-    image_mode: selectedImageMode(),
+    lauttreu: state.lauttreuOnly,
+    image_mode: state.imageMode,
     page: 1,
     page_size: 25
   });
@@ -384,7 +401,8 @@ async function handleInsertImage(id: number): Promise<void> {
   }
 
   setStatus(`Bild zu \"${item.name}\" wird eingefuegt ...`);
-  await insertWordImage(imageUrl);
+  const imageBlob = await fetchWordImageBlob(state.config, item.id, state.imageMode);
+  await insertWordImage(imageBlob);
   setStatus(`Bild zu \"${item.name}\" wurde eingefuegt.`, 'success');
 }
 
@@ -397,8 +415,8 @@ function toggleSelection(id: number, checked: boolean): void {
   render();
 }
 
-async function handleAction(target: HTMLElement): Promise<void> {
-  const role = target.dataset.role;
+async function handleAction(actionElement: HTMLElement): Promise<void> {
+  const role = actionElement.dataset.role;
   if (!role) {
     return;
   }
@@ -436,7 +454,7 @@ async function handleAction(target: HTMLElement): Promise<void> {
       return;
     }
 
-    const id = Number(target.dataset.id ?? '0');
+    const id = Number(actionElement.dataset.id ?? '0');
     if (!id) {
       return;
     }
@@ -456,11 +474,15 @@ async function handleAction(target: HTMLElement): Promise<void> {
 }
 
 app.addEventListener('click', (event) => {
-  const target = event.target as HTMLElement | null;
-  if (!target) {
+  const target = event.target;
+  if (!(target instanceof Element)) {
     return;
   }
-  void handleAction(target);
+  const actionElement = target.closest<HTMLElement>('[data-role]');
+  if (!actionElement) {
+    return;
+  }
+  void handleAction(actionElement);
 });
 
 app.addEventListener('change', (event) => {
