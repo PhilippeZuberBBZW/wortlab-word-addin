@@ -59,7 +59,7 @@ const state: AppState = {
   statusText: 'Bereit.',
   statusKind: 'idle',
   totalFiltered: 0,
-  entitledLabel: 'Noch nicht geprueft'
+  entitledLabel: 'Noch nicht geprüft'
 };
 
 function setStatus(text: string, kind: AppState['statusKind'] = 'idle'): void {
@@ -118,7 +118,7 @@ function renderOptions(name: string, options: FilterOption[], selected: Set<numb
 
 function renderResults(): string {
   if (state.results.length === 0) {
-    return '<div class="empty">Noch keine Treffer. Fuehre zuerst eine Suche aus oder lade eine Sammlung.</div>';
+    return '<div class="empty">Noch keine Treffer. Führe zuerst eine Suche aus oder lade eine Sammlung.</div>';
   }
 
   return state.results
@@ -127,7 +127,7 @@ function renderResults(): string {
       const checked = state.selectedIds.has(item.id) ? 'checked' : '';
       const image = imageUrl
         ? `<img class="result-preview" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.name)}" draggable="false">`
-        : '<div class="empty">Kein Bild verfuegbar.</div>';
+        : '<div class="empty">Kein Bild verfügbar.</div>';
 
       return `
         <article class="result-card">
@@ -140,8 +140,8 @@ function renderResults(): string {
           </div>
           ${image}
           <div class="result-actions">
-            <button type="button" data-role="insert-text" data-id="${item.id}">Wort einfuegen</button>
-            <button type="button" class="secondary" data-role="insert-image" data-id="${item.id}" ${imageUrl ? '' : 'disabled'}>Bild einfuegen</button>
+            <button type="button" data-role="insert-text" data-id="${item.id}">Wort einfügen</button>
+            <button type="button" class="secondary" data-role="insert-image" data-id="${item.id}" ${imageUrl ? '' : 'disabled'}>Bild einfügen</button>
           </div>
         </article>
       `;
@@ -150,7 +150,7 @@ function renderResults(): string {
 }
 
 function renderCollections(): string {
-  const options = ['<option value="">Bitte waehlen...</option>']
+  const options = ['<option value="">Bitte wählen...</option>']
     .concat(
       state.collections.map((collection) => {
         const selected = state.activeCollectionId === collection.id ? 'selected' : '';
@@ -188,8 +188,8 @@ function render(): void {
   app.innerHTML = `
     <main class="shell">
       <section class="hero">
-        <h1>Wortlab fuer Word</h1>
-        <p>Suche Woerter und Bilder direkt aus Wortlab und fuege sie in dein Dokument ein.</p>
+        <h1>Wortlab für Word</h1>
+        <p>Suche Wörter und Bilder direkt aus Wortlab und füge sie in dein Dokument ein.</p>
       </section>
 
       <section class="panel">
@@ -274,7 +274,7 @@ function render(): void {
 async function connect(): Promise<void> {
   state.config = configFromForm();
   saveConfig(state.config);
-  setStatus('Verbindung wird geprueft ...');
+  setStatus('Verbindung wird geprüft ...');
 
   const [entitlement, filters, collections] = await Promise.all([
     getEntitlement(state.config),
@@ -296,7 +296,7 @@ async function runSearch(): Promise<void> {
   state.config = configFromForm();
   saveConfig(state.config);
   syncSearchStateFromForm();
-  setStatus('Suche laeuft ...');
+  setStatus('Suche läuft ...');
 
   const response = await searchWords(state.config, {
     search_text: state.searchText,
@@ -318,7 +318,7 @@ async function runSearch(): Promise<void> {
 async function loadSelectedCollection(): Promise<void> {
   const id = Number(document.querySelector<HTMLSelectElement>('#collectionSelect')?.value ?? '0');
   if (!id) {
-    setStatus('Bitte zuerst eine Sammlung waehlen.', 'error');
+    setStatus('Bitte zuerst eine Sammlung wählen.', 'error');
     return;
   }
 
@@ -345,7 +345,7 @@ async function loadSelectedCollection(): Promise<void> {
 async function saveCurrentSelectionToCollection(): Promise<void> {
   const id = Number(document.querySelector<HTMLSelectElement>('#collectionSelect')?.value ?? '0');
   if (!id) {
-    setStatus('Bitte zuerst eine bestehende Sammlung waehlen.', 'error');
+    setStatus('Bitte zuerst eine bestehende Sammlung wählen.', 'error');
     return;
   }
 
@@ -365,7 +365,7 @@ async function saveCurrentSelectionToCollection(): Promise<void> {
 async function createNewCollection(): Promise<void> {
   const name = (document.querySelector<HTMLInputElement>('#collectionName')?.value ?? '').trim();
   if (!name) {
-    setStatus('Bitte einen Namen fuer die neue Sammlung eingeben.', 'error');
+    setStatus('Bitte einen Namen für die neue Sammlung eingeben.', 'error');
     return;
   }
 
@@ -387,23 +387,23 @@ async function handleInsertText(id: number): Promise<void> {
     return;
   }
 
-  setStatus(`\"${item.name}\" wird in Word eingefuegt ...`);
+  setStatus(`\"${item.name}\" wird in Word eingefügt ...`);
   await insertWordText(item.name);
-  setStatus(`\"${item.name}\" wurde eingefuegt.`, 'success');
+  setStatus(`\"${item.name}\" wurde eingefügt.`, 'success');
 }
 
 async function handleInsertImage(id: number): Promise<void> {
   const item = findWordById(id);
   const imageUrl = item ? getImageUrl(item) : '';
   if (!item || !imageUrl) {
-    setStatus('Kein Bild fuer dieses Wort verfuegbar.', 'error');
+    setStatus('Kein Bild für dieses Wort verfügbar.', 'error');
     return;
   }
 
-  setStatus(`Bild zu \"${item.name}\" wird eingefuegt ...`);
+  setStatus(`Bild zu \"${item.name}\" wird eingefügt ...`);
   const imageBlob = await fetchWordImageBlob(state.config, item.id, state.imageMode);
   await insertWordImage(imageBlob);
-  setStatus(`Bild zu \"${item.name}\" wurde eingefuegt.`, 'success');
+  setStatus(`Bild zu \"${item.name}\" wurde eingefügt.`, 'success');
 }
 
 function toggleSelection(id: number, checked: boolean): void {

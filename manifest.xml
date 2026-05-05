@@ -8,8 +8,8 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Wortlab</ProviderName>
   <DefaultLocale>de-CH</DefaultLocale>
-  <DisplayName DefaultValue="Wortlab fuer Word" />
-  <Description DefaultValue="Suche Woerter und Bilder aus Wortlab direkt in Microsoft Word." />
+  <DisplayName DefaultValue="Wortlab für Word" />
+  <Description DefaultValue="Suche Wörter und Bilder aus Wortlab direkt in Microsoft Word." />
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.png" />
   <SupportUrl DefaultValue="https://wortlab.ch" />
@@ -77,13 +77,13 @@
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/index.html" />
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Wortlab fuer Word" />
+        <bt:String id="GetStarted.Title" DefaultValue="Wortlab für Word" />
         <bt:String id="Wortlab.GroupLabel" DefaultValue="Wortlab" />
-        <bt:String id="Wortlab.ButtonLabel" DefaultValue="Wortlab oeffnen" />
+        <bt:String id="Wortlab.ButtonLabel" DefaultValue="Wortlab öffnen" />
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Suche Woerter und Bilder direkt aus Wortlab im Word-Dokument." />
-        <bt:String id="Wortlab.ButtonDescription" DefaultValue="Oeffnet die Wortlab-Suche im Aufgabenbereich." />
+        <bt:String id="GetStarted.Description" DefaultValue="Suche Wörter und Bilder direkt aus Wortlab im Word-Dokument." />
+        <bt:String id="Wortlab.ButtonDescription" DefaultValue="Öffnet die Wortlab-Suche im Aufgabenbereich." />
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
