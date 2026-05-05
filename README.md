@@ -65,6 +65,27 @@ Release-Check (kurz):
 3. Wort einfügen funktioniert
 4. Bild einfügen funktioniert
 
+## Release-Ablauf (develop -> main)
+
+Dieser Ablauf ist für jeden Release verbindlich.
+
+1. Auf `develop` arbeiten und alle Änderungen dort abschliessen.
+2. Lokalen Test durchführen (`npm run build`).
+3. End-to-End-Test in Word mit [manifest.dev.xml](manifest.dev.xml) durchführen.
+4. Versionsnummer erhöhen in `package.json` (`version`) und [manifest.prod.xml](manifest.prod.xml) (`<Version>...`).
+5. Produktionsartefakt aktualisieren (`npm run build` und `dist/` auf `https://addin.wortlab.ch` deployen).
+6. Produktionsvalidierung durchführen (Erreichbarkeit von `index.html`, `commands.html` und Test in Word mit [manifest.prod.xml](manifest.prod.xml)).
+7. Merge nach `main` erst nach erfolgreicher Validierung.
+8. Release-Tag erstellen (z. B. `v0.2.0`) und veröffentlichen.
+9. Bei Problemen sofort Rollback auf den letzten stabilen Tag.
+
+Definition von "Release-fertig":
+
+1. Build fehlerfrei
+2. Token-Flow und API-Zugriff funktionieren
+3. Suche, Wort-Einfügen und Bild-Einfügen funktionieren
+4. Produktionsmanifest verweist nur auf Live-URLs
+
 ## Nächste Schritte
 
 1. Node lokal installierbar machen und den Dev-Server starten.
