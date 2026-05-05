@@ -35,6 +35,12 @@ interface AppState {
   statusKind: 'idle' | 'error' | 'success';
   totalFiltered: number;
   entitledLabel: string;
+  semanticQuery: string;
+  accordionOpen: {
+    category: boolean;
+    alter: boolean;
+    semantic: boolean;
+  };
 }
 
 const appElement = document.querySelector<HTMLDivElement>('#app');
@@ -59,7 +65,13 @@ const state: AppState = {
   statusText: 'Bereit.',
   statusKind: 'idle',
   totalFiltered: 0,
-  entitledLabel: 'Noch nicht geprüft'
+  entitledLabel: 'Noch nicht geprüft',
+  semanticQuery: '',
+  accordionOpen: {
+    category: false,
+    alter: false,
+    semantic: false
+  }
 };
 
 function setStatus(text: string, kind: AppState['statusKind'] = 'idle'): void {
@@ -116,6 +128,14 @@ function renderOptions(name: string, options: FilterOption[], selected: Set<numb
     .join('');
 }
 
+function filterOptionsByQuery(options: FilterOption[], query: string): FilterOption[] {
+  const normalized = query.trim().toLocaleLowerCase('de-CH');
+  if (!normalized) {
+    return options;
+  }
+  return options.filter((option) => option.name.toLocaleLowerCase('de-CH').includes(normalized));
+}
+
 function renderResults(): string {
   if (state.results.length === 0) {
     return '<div class="empty">Noch keine Treffer. Führe zuerst eine Suche aus oder lade eine Sammlung.</div>';
@@ -135,7 +155,6 @@ function renderResults(): string {
             <input class="result-checkbox" type="checkbox" data-role="select-word" data-id="${item.id}" ${checked}>
             <div>
               <h3 class="result-title">${escapeHtml(item.name)}</h3>
-              <p class="result-sub">ID ${item.id} · ${item.lauttreu ? 'lauttreu' : 'nicht lauttreu'}</p>
             </div>
           </div>
           ${image}
@@ -184,6 +203,7 @@ function render(): void {
   const selectedCategory = new Set(selectedValues('category'));
   const selectedSemantic = new Set(selectedValues('semantic'));
   const selectedAlter = new Set(selectedValues('alter'));
+  const filteredSemanticOptions = filterOptionsByQuery(state.semanticOptions, state.semanticQuery);
 
   app.innerHTML = `
     <main class="shell">
@@ -237,19 +257,25 @@ function render(): void {
             </div>
           </div>
           <label class="checkline"><input id="lauttreu" type="checkbox" ${state.lauttreuOnly ? 'checked' : ''}> <span>Lauttreu</span></label>
-          <div class="grid two">
-            <div class="field">
-              <span class="label">Wortarten</span>
-              <div class="grid">${renderOptions('category', state.categoryOptions, selectedCategory)}</div>
-            </div>
-            <div class="field">
-              <span class="label">Alter</span>
-              <div class="grid">${renderOptions('alter', state.alterOptions, selectedAlter)}</div>
-            </div>
-          </div>
-          <div class="field">
-            <span class="label">Kategorien</span>
-            <div class="grid">${renderOptions('semantic', state.semanticOptions, selectedSemantic)}</div>
+          <div class="accordion-group">
+            <details class="accordion" data-accordion="category" ${state.accordionOpen.category ? 'open' : ''}>
+              <summary>Wortarten</summary>
+              <div class="accordion-content grid">${renderOptions('category', state.categoryOptions, selectedCategory)}</div>
+            </details>
+            <details class="accordion" data-accordion="alter" ${state.accordionOpen.alter ? 'open' : ''}>
+              <summary>Alter</summary>
+              <div class="accordion-content grid">${renderOptions('alter', state.alterOptions, selectedAlter)}</div>
+            </details>
+            <details class="accordion" data-accordion="semantic" ${state.accordionOpen.semantic ? 'open' : ''}>
+              <summary>Kategorien</summary>
+              <div class="accordion-content grid">
+                <div class="field">
+                  <label for="semanticFilter">Kategorien filtern</label>
+                  <input id="semanticFilter" type="search" value="${escapeHtml(state.semanticQuery)}" placeholder="Kategorie suchen ...">
+                </div>
+                ${renderOptions('semantic', filteredSemanticOptions, selectedSemantic)}
+              </div>
+            </details>
           </div>
           <div class="actions">
             <button type="button" data-role="search">Suchen</button>
@@ -269,6 +295,40 @@ function render(): void {
       </section>
     </main>
   `;
+}
+
+function renderPreservingView(focusElementId?: string): void {
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
+  const activeElement = document.activeElement;
+
+  let activeId: string | null = null;
+  let selectionStart: number | null = null;
+  let selectionEnd: number | null = null;
+
+  if (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement) {
+    activeId = activeElement.id;
+    selectionStart = activeElement.selectionStart;
+    selectionEnd = activeElement.selectionEnd;
+  }
+
+  render();
+  window.scrollTo(scrollX, scrollY);
+
+  const nextFocusId = focusElementId ?? activeId;
+  if (!nextFocusId) {
+    return;
+  }
+
+  const nextFocusElement = document.getElementById(nextFocusId);
+  if (!(nextFocusElement instanceof HTMLInputElement || nextFocusElement instanceof HTMLTextAreaElement)) {
+    return;
+  }
+
+  nextFocusElement.focus({ preventScroll: true });
+  if (selectionStart !== null && selectionEnd !== null) {
+    nextFocusElement.setSelectionRange(selectionStart, selectionEnd);
+  }
 }
 
 async function connect(): Promise<void> {
@@ -496,6 +556,30 @@ app.addEventListener('change', (event) => {
     if (id) {
       toggleSelection(id, target.checked);
     }
+  }
+});
+
+app.addEventListener('input', (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+
+  if (target.id === 'semanticFilter') {
+    state.semanticQuery = target.value;
+    renderPreservingView('semanticFilter');
+  }
+});
+
+app.addEventListener('toggle', (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLDetailsElement)) {
+    return;
+  }
+
+  const accordionKey = target.dataset.accordion;
+  if (accordionKey === 'category' || accordionKey === 'alter' || accordionKey === 'semantic') {
+    state.accordionOpen[accordionKey] = target.open;
   }
 });
 

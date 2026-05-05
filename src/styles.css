@@ -2,10 +2,19 @@
   color-scheme: light;
   font-family: "Aptos", "Segoe UI", sans-serif;
   line-height: 1.4;
-  color: #12332b;
+  color: #2c7986;
+  --wl-blue-1: #31b0d5;
+  --wl-blue-2: #269dc1;
+  --wl-green: #48885c;
+  --wl-teal: #2c7986;
+  --wl-blue-3: #1798d2;
+  --wl-text: #1f5d68;
+  --wl-border: rgba(44, 121, 134, 0.2);
+  --wl-surface: rgba(255, 255, 255, 0.88);
+  --wl-surface-strong: rgba(255, 255, 255, 0.94);
   background:
-    radial-gradient(circle at top left, rgba(200, 231, 215, 0.95), transparent 38%),
-    linear-gradient(180deg, #f7f2e8 0%, #f0ece2 100%);
+    radial-gradient(circle at top left, rgba(49, 176, 213, 0.24), transparent 38%),
+    linear-gradient(180deg, rgba(23, 152, 210, 0.1) 0%, rgba(72, 136, 92, 0.1) 100%);
 }
 
 * {
@@ -28,11 +37,11 @@ button {
   border: 0;
   border-radius: 14px;
   padding: 0.8rem 1rem;
-  background: #0f5c4d;
+  background: linear-gradient(135deg, var(--wl-blue-1), var(--wl-blue-2));
   color: #fff;
   cursor: pointer;
   transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
-  box-shadow: 0 10px 24px rgba(15, 92, 77, 0.18);
+  box-shadow: 0 10px 24px rgba(38, 157, 193, 0.3);
 }
 
 button:hover {
@@ -48,9 +57,9 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid rgba(18, 51, 43, 0.18);
+  border: 1px solid var(--wl-border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--wl-surface);
   padding: 0.75rem 0.85rem;
 }
 
@@ -71,18 +80,18 @@ textarea {
 .hero,
 .panel,
 .result-card {
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(18, 51, 43, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--wl-border);
   border-radius: 22px;
   backdrop-filter: blur(16px);
-  box-shadow: 0 14px 34px rgba(18, 51, 43, 0.08);
+  box-shadow: 0 14px 34px rgba(44, 121, 134, 0.14);
 }
 
 .hero {
   padding: 1.2rem;
   background:
-    linear-gradient(145deg, rgba(15, 92, 77, 0.96), rgba(28, 88, 126, 0.9)),
-    #0f5c4d;
+    linear-gradient(145deg, var(--wl-blue-2), var(--wl-teal)),
+    var(--wl-blue-2);
   color: #f9f5ee;
 }
 
@@ -123,7 +132,7 @@ textarea {
 .label {
   font-size: 0.84rem;
   font-weight: 700;
-  color: #365a51;
+  color: var(--wl-teal);
 }
 
 .checkline {
@@ -136,6 +145,49 @@ textarea {
   width: auto;
 }
 
+.accordion-group {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.accordion {
+  border: 1px solid var(--wl-border);
+  border-radius: 12px;
+  background: var(--wl-surface-strong);
+  overflow: hidden;
+}
+
+.accordion summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--wl-teal);
+  padding: 0.72rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion summary::after {
+  content: '+';
+  font-size: 1rem;
+  color: var(--wl-blue-3);
+}
+
+.accordion[open] summary::after {
+  content: '-';
+}
+
+.accordion-content {
+  border-top: 1px solid var(--wl-border);
+  padding: 0.7rem 0.85rem 0.85rem;
+}
+
 .actions {
   display: flex;
   gap: 0.65rem;
@@ -143,21 +195,21 @@ textarea {
 }
 
 .actions button.secondary {
-  background: #f1c66d;
-  color: #3c2f11;
+  background: linear-gradient(135deg, var(--wl-green), #3f7a52);
+  color: #ffffff;
 }
 
 .actions button.ghost {
   background: #fff;
-  color: #0f5c4d;
+  color: var(--wl-teal);
   box-shadow: none;
-  border: 1px solid rgba(15, 92, 77, 0.2);
+  border: 1px solid var(--wl-border);
 }
 
 .status {
   min-height: 1.4rem;
   font-size: 0.9rem;
-  color: #365a51;
+  color: var(--wl-teal);
 }
 
 .status.error {
@@ -165,7 +217,7 @@ textarea {
 }
 
 .status.success {
-  color: #176542;
+  color: var(--wl-green);
 }
 
 .meta-strip {
@@ -177,9 +229,10 @@ textarea {
 .meta-pill {
   border-radius: 999px;
   padding: 0.35rem 0.7rem;
-  background: rgba(15, 92, 77, 0.1);
+  background: rgba(49, 176, 213, 0.16);
   font-size: 0.78rem;
   font-weight: 700;
+  color: var(--wl-text);
 }
 
 .result-list {
@@ -219,8 +272,8 @@ textarea {
   max-height: 180px;
   object-fit: contain;
   border-radius: 16px;
-  background: linear-gradient(180deg, #f8f5ef, #edf2ec);
-  border: 1px solid rgba(18, 51, 43, 0.08);
+  background: linear-gradient(180deg, rgba(49, 176, 213, 0.08), rgba(72, 136, 92, 0.1));
+  border: 1px solid var(--wl-border);
 }
 
 .result-actions {
@@ -236,14 +289,14 @@ textarea {
 
 .note {
   font-size: 0.82rem;
-  color: #5c7c74;
+  color: #3f6f78;
 }
 
 .empty {
   padding: 1rem;
   border-radius: 16px;
-  border: 1px dashed rgba(18, 51, 43, 0.2);
-  color: #5c7c74;
+  border: 1px dashed rgba(44, 121, 134, 0.35);
+  color: #3f6f78;
 }
 
 @media (max-width: 420px) {
