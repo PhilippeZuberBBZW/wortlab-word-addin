@@ -7,7 +7,12 @@
     "dev": "vite --host localhost --port 3000",
     "build": "tsc && vite build",
     "preview": "vite preview --host localhost --port 4173",
-    "certs:install": "office-addin-dev-certs install"
+    "certs:install": "office-addin-dev-certs install",
+    "release:version:patch": "npm version patch --no-git-tag-version",
+    "release:version:minor": "npm version minor --no-git-tag-version",
+    "release:version:major": "npm version major --no-git-tag-version",
+    "release:sync-version": "node scripts/sync-manifest-version.mjs",
+    "release:check": "npm run release:sync-version && npm run build"
   },
   "devDependencies": {
     "@types/office-js": "^1.0.417",

@@ -86,6 +86,22 @@ Definition von "Release-fertig":
 3. Suche, Wort-Einfügen und Bild-Einfügen funktionieren
 4. Produktionsmanifest verweist nur auf Live-URLs
 
+## Release-Schnellablauf (2-3 Minuten)
+
+Wenn die Änderungen bereits fertig entwickelt und getestet sind, reichen diese Schritte:
+
+1. Patch-Version erhöhen: `npm run release:version:patch`
+2. Manifest-Versionen synchronisieren und Build prüfen: `npm run release:check`
+3. Geänderte Dateien committen (`package.json`, `package-lock.json`, Manifeste)
+4. Nach erfolgreichem Word-Test nach `main` mergen und Tag setzen
+
+Optionen für grössere Releases:
+
+1. `npm run release:version:minor`
+2. `npm run release:version:major`
+
+Hinweis: `release:sync-version` setzt die Manifest-Version auf das Schema aus `package.json` plus `.0` (Beispiel: `0.2.1` -> `0.2.1.0`).
+
 ## Nächste Schritte
 
 1. Node lokal installierbar machen und den Dev-Server starten.
