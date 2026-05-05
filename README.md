@@ -51,3 +51,25 @@ Der Client erwartet derzeit einen Bearer-Token. Diesen kann man aktuell über de
 2. Add-in in Word sideloaden und den ersten End-to-End-Flow prüfen.
 3. Token-Eingabe durch echten Login- oder Token-Bridge-Flow ersetzen.
 4. Danach Suchdetails, Paging und bessere Collection-Interaktionen erweitern.
+
+## Branch- und Merge-Regeln
+
+Aktuelle Branches:
+
+- `main`: Release-Branch für veröffentlichte Stände
+- `develop`: Integrations-Branch für laufende Entwicklung
+- `local-stable`: lokale Sicherheitslinie mit funktionierendem Stand
+
+Verbindlicher Ablauf:
+
+1. Neue Arbeit immer von `develop` abzweigen, z. B. `feature/login-flow`.
+2. Feature in den eigenen Branch committen und testen.
+3. Feature per Pull Request nach `develop` mergen.
+4. Release nur von `develop` nach `main` mergen.
+5. `local-stable` nur aktualisieren, wenn ein Stand nachweislich lokal stabil ist.
+
+Zusatzregeln:
+
+1. Keine direkten Feature-Commits auf `main`.
+2. Keine Experimente auf `local-stable`.
+3. Vor jedem Merge nach `main`: kurzer End-to-End-Test in Word (Suchen, Einfügen Text, Einfügen Bild).
