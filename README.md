@@ -21,14 +21,14 @@ Erster Web-Add-in-Client für Wortlab. Das Add-in spricht mit der bestehenden Wo
 2. `VITE_WORTLAB_API_BASE` auf die Ziel-API setzen.
 3. `npm install`
 4. `npm run dev`
-5. Das Manifest [manifest.xml](manifest.xml) in Word sideloaden.
+5. Für lokale Entwicklung das Manifest [manifest.dev.xml](manifest.dev.xml) in Word sideloaden.
 
 ## Lokaler Word-Test
 
 1. Sicherstellen, dass `https://localhost:3000` im Browser ohne Zertifikatsfehler erreichbar ist.
 2. Word Desktop öffnen.
 3. `Datei` -> `Optionen` -> `Trust Center` -> `Einstellungen für das Trust Center` -> geteilte Ordner oder zentralen Bereitstellungspfad je nach Testsetup verwenden.
-4. [manifest.xml](manifest.xml) sideloaden.
+4. [manifest.dev.xml](manifest.dev.xml) sideloaden.
 5. In Word im Ribbon `Wortlab öffnen` klicken.
 
 Hinweis: Das Manifest verwendet jetzt `commands.html` als separates `FunctionFile` und `index.html` für den eigentlichen Taskpane-Inhalt. Das entspricht dem üblichen Office-Add-in-Muster.
@@ -39,11 +39,31 @@ Der Client erwartet derzeit einen Bearer-Token. Diesen kann man aktuell über de
 
 ## Wichtige Dateien
 
+- [manifest.dev.xml](manifest.dev.xml)
+- [manifest.prod.xml](manifest.prod.xml)
 - [manifest.xml](manifest.xml)
 - [src/main.ts](src/main.ts)
 - [src/api.ts](src/api.ts)
 - [src/office.ts](src/office.ts)
 - [src/styles.css](src/styles.css)
+
+Hinweis: [manifest.xml](manifest.xml) bleibt als kompatibles Standardmanifest im Projekt und entspricht aktuell der lokalen Dev-Konfiguration.
+
+## Veröffentlichung (Web-Add-in)
+
+1. Frontend bauen: `npm run build`
+2. Inhalt aus `dist/` auf die produktive HTTPS-Domain deployen (aktuell vorgesehen: `https://addin.wortlab.ch`).
+3. Prüfen, dass `index.html`, `commands.html` und `/assets/*` öffentlich erreichbar sind.
+4. Für den Rollout immer [manifest.prod.xml](manifest.prod.xml) verwenden.
+5. Vor Release die Versionsnummer im Manifest erhöhen.
+6. Kurztest in Word mit Produktionsmanifest durchführen.
+
+Release-Check (kurz):
+
+1. Token vorhanden und API erreichbar
+2. Suche funktioniert
+3. Wort einfügen funktioniert
+4. Bild einfügen funktioniert
 
 ## Nächste Schritte
 
