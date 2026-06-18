@@ -62,7 +62,18 @@ export interface EntitlementResponse {
     entitled: boolean;
     plan_code: string;
     billing_period: string;
+    status?: string;
+    expires_at?: string | null;
   };
+  request_id?: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  token_type: string;
+  expires_in: number;
+  user_id: number;
+  role: number;
   request_id?: string;
 }
 
@@ -139,6 +150,30 @@ export function saveConfig(config: AppConfig): void {
       token: config.token.trim()
     })
   );
+}
+
+export async function loginWithCredentials(apiBaseUrl: string, identifier: string, password: string): Promise<LoginResponse> {
+  const response = await fetch(`${normalizeBaseUrl(apiBaseUrl)}/login.php`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ identifier, password })
+  });
+
+  if (!response.ok) {
+    let message = `${response.status} ${response.statusText}`;
+    try {
+      const body = await response.json();
+      if (body?.error) {
+        message = `${message}: ${body.error}`;
+      }
+    } catch {
+    }
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<LoginResponse>;
 }
 
 export async function getEntitlement(config: AppConfig): Promise<EntitlementResponse> {
