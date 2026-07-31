@@ -5,6 +5,7 @@ import {
   getCollection,
   getEntitlement,
   getFilterOptions,
+  loginWithCredentials,
   getWordDetails,
   listCollections,
   loadConfig,
@@ -35,6 +36,7 @@ interface AppState {
   statusKind: 'idle' | 'error' | 'success';
   totalFiltered: number;
   entitledLabel: string;
+  isEntitled: boolean;
   semanticQuery: string;
   accordionOpen: {
     category: boolean;
@@ -66,6 +68,7 @@ const state: AppState = {
   statusKind: 'idle',
   totalFiltered: 0,
   entitledLabel: 'Noch nicht geprüft',
+  isEntitled: false,
   semanticQuery: '',
   accordionOpen: {
     category: false,
@@ -113,6 +116,13 @@ function configFromForm(): AppConfig {
   const apiBaseUrl = (document.querySelector<HTMLInputElement>('#apiBaseUrl')?.value ?? '').trim();
   const token = (document.querySelector<HTMLTextAreaElement>('#accessToken')?.value ?? '').trim();
   return { apiBaseUrl, token };
+}
+
+function clearPasswordField(): void {
+  const passwordInput = document.querySelector<HTMLInputElement>('#authPassword');
+  if (passwordInput) {
+    passwordInput.value = '';
+  }
 }
 
 function renderOptions(name: string, options: FilterOption[], selected: Set<number>): string {
@@ -219,15 +229,28 @@ function render(): void {
             <label for="apiBaseUrl">API-Basis</label>
             <input id="apiBaseUrl" type="url" value="${escapeHtml(state.config.apiBaseUrl)}" placeholder="https://wortlab.ch/api/v1">
           </div>
+          <div class="grid two">
+            <div class="field">
+              <label for="authIdentifier">Benutzername oder E-Mail</label>
+              <input id="authIdentifier" type="text" placeholder="z. B. name@schule.ch">
+            </div>
+            <div class="field">
+              <label for="authPassword">Passwort</label>
+              <input id="authPassword" type="password" placeholder="Passwort">
+            </div>
+          </div>
           <div class="field">
-            <label for="accessToken">Bearer-Token</label>
-            <textarea id="accessToken" placeholder="Token aus auth_token.php">${escapeHtml(state.config.token)}</textarea>
+            <label for="accessToken">Bearer-Token (optional)</label>
+            <textarea id="accessToken" placeholder="Wird nach Login automatisch gesetzt oder manuell eingefügt">${escapeHtml(state.config.token)}</textarea>
           </div>
           <div class="actions">
+            <button type="button" data-role="login">Einloggen</button>
             <button type="button" data-role="save-config">Speichern</button>
             <button type="button" class="secondary" data-role="connect">Verbindung testen</button>
+            <button type="button" class="ghost" data-role="logout">Ausloggen</button>
           </div>
           <div class="meta-strip">
+            <span class="meta-pill">Status: ${state.config.token ? 'angemeldet' : 'abgemeldet'}</span>
             <span class="meta-pill">Entitlement: ${escapeHtml(state.entitledLabel)}</span>
             <span class="meta-pill">Treffer: ${state.totalFiltered}</span>
             <span class="meta-pill">Auswahl: ${state.selectedIds.size}</span>
@@ -334,6 +357,16 @@ function renderPreservingView(focusElementId?: string): void {
 async function connect(): Promise<void> {
   state.config = configFromForm();
   saveConfig(state.config);
+
+  if (!state.config.apiBaseUrl) {
+    setStatus('Bitte zuerst die API-Basis eintragen.', 'error');
+    return;
+  }
+  if (!state.config.token) {
+    setStatus('Bitte zuerst einloggen oder einen Bearer-Token eintragen.', 'error');
+    return;
+  }
+
   setStatus('Verbindung wird geprüft ...');
 
   const [entitlement, filters, collections] = await Promise.all([
@@ -345,14 +378,68 @@ async function connect(): Promise<void> {
   state.entitledLabel = entitlement.data.entitled
     ? `${entitlement.data.plan_code} · ${entitlement.data.billing_period}`
     : 'kein Zugang';
+  state.isEntitled = entitlement.data.entitled;
   state.categoryOptions = filters.data.category;
   state.semanticOptions = filters.data.semantic;
   state.alterOptions = filters.data.alter;
   state.collections = collections;
+  if (!state.isEntitled) {
+    setStatus('Login erfolgreich, aber kein aktives Abo. Bitte Freischaltung bei info@wortlab.ch anfordern.', 'error');
+    return;
+  }
   setStatus('Verbindung erfolgreich. Filter und Sammlungen geladen.', 'success');
 }
 
+async function loginDirect(): Promise<void> {
+  const apiBaseUrl = (document.querySelector<HTMLInputElement>('#apiBaseUrl')?.value ?? '').trim();
+  const identifier = (document.querySelector<HTMLInputElement>('#authIdentifier')?.value ?? '').trim();
+  const password = document.querySelector<HTMLInputElement>('#authPassword')?.value ?? '';
+
+  if (!apiBaseUrl) {
+    setStatus('Bitte zuerst die API-Basis eintragen.', 'error');
+    return;
+  }
+  if (!identifier || !password) {
+    setStatus('Bitte Benutzername/E-Mail und Passwort eingeben.', 'error');
+    return;
+  }
+
+  setStatus('Login läuft ...');
+  const login = await loginWithCredentials(apiBaseUrl, identifier, password);
+
+  state.config = {
+    apiBaseUrl,
+    token: login.token
+  };
+  saveConfig(state.config);
+  clearPasswordField();
+  render();
+
+  await connect();
+}
+
+function logoutDirect(): void {
+  state.config = {
+    apiBaseUrl: (document.querySelector<HTMLInputElement>('#apiBaseUrl')?.value ?? state.config.apiBaseUrl).trim(),
+    token: ''
+  };
+  saveConfig(state.config);
+  state.entitledLabel = 'Noch nicht geprüft';
+  state.isEntitled = false;
+  state.results = [];
+  state.totalFiltered = 0;
+  state.selectedIds = new Set<number>();
+  clearPasswordField();
+  render();
+  setStatus('Du bist ausgeloggt.', 'success');
+}
+
 async function runSearch(): Promise<void> {
+  if (!state.isEntitled) {
+    setStatus('Keine aktive Berechtigung. Suche ist gesperrt.', 'error');
+    return;
+  }
+
   state.config = configFromForm();
   saveConfig(state.config);
   syncSearchStateFromForm();
@@ -376,6 +463,11 @@ async function runSearch(): Promise<void> {
 }
 
 async function loadSelectedCollection(): Promise<void> {
+  if (!state.isEntitled) {
+    setStatus('Keine aktive Berechtigung. Sammlungen sind gesperrt.', 'error');
+    return;
+  }
+
   const id = Number(document.querySelector<HTMLSelectElement>('#collectionSelect')?.value ?? '0');
   if (!id) {
     setStatus('Bitte zuerst eine Sammlung wählen.', 'error');
@@ -403,6 +495,11 @@ async function loadSelectedCollection(): Promise<void> {
 }
 
 async function saveCurrentSelectionToCollection(): Promise<void> {
+  if (!state.isEntitled) {
+    setStatus('Keine aktive Berechtigung. Sammlungen sind gesperrt.', 'error');
+    return;
+  }
+
   const id = Number(document.querySelector<HTMLSelectElement>('#collectionSelect')?.value ?? '0');
   if (!id) {
     setStatus('Bitte zuerst eine bestehende Sammlung wählen.', 'error');
@@ -423,6 +520,11 @@ async function saveCurrentSelectionToCollection(): Promise<void> {
 }
 
 async function createNewCollection(): Promise<void> {
+  if (!state.isEntitled) {
+    setStatus('Keine aktive Berechtigung. Sammlungen sind gesperrt.', 'error');
+    return;
+  }
+
   const name = (document.querySelector<HTMLInputElement>('#collectionName')?.value ?? '').trim();
   if (!name) {
     setStatus('Bitte einen Namen für die neue Sammlung eingeben.', 'error');
@@ -441,6 +543,11 @@ function findWordById(id: number): WordSearchItem | undefined {
 }
 
 async function handleInsertText(id: number): Promise<void> {
+  if (!state.isEntitled) {
+    setStatus('Keine aktive Berechtigung. Einfügen ist gesperrt.', 'error');
+    return;
+  }
+
   const item = findWordById(id);
   if (!item) {
     setStatus('Wort nicht gefunden.', 'error');
@@ -453,6 +560,11 @@ async function handleInsertText(id: number): Promise<void> {
 }
 
 async function handleInsertImage(id: number): Promise<void> {
+  if (!state.isEntitled) {
+    setStatus('Keine aktive Berechtigung. Einfügen ist gesperrt.', 'error');
+    return;
+  }
+
   const item = findWordById(id);
   const imageUrl = item ? getImageUrl(item) : '';
   if (!item || !imageUrl) {
@@ -486,6 +598,16 @@ async function handleAction(actionElement: HTMLElement): Promise<void> {
       state.config = configFromForm();
       saveConfig(state.config);
       setStatus('Konfiguration gespeichert.', 'success');
+      return;
+    }
+
+    if (role === 'login') {
+      await loginDirect();
+      return;
+    }
+
+    if (role === 'logout') {
+      logoutDirect();
       return;
     }
 
