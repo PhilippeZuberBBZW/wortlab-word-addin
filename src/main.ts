@@ -384,7 +384,7 @@ async function connect(): Promise<void> {
   state.alterOptions = filters.data.alter;
   state.collections = collections;
   if (!state.isEntitled) {
-    setStatus('Login erfolgreich, aber kein aktives Abo. Bitte Freischaltung bei info@wortlab.ch anfordern.', 'error');
+    setStatus('Login erfolgreich, aber kein aktives Abo. Bitte Freischaltung auf wortlab.ch anfordern.', 'error');
     return;
   }
   setStatus('Verbindung erfolgreich. Filter und Sammlungen geladen.', 'success');
