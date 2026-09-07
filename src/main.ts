@@ -693,17 +693,21 @@ app.addEventListener('input', (event) => {
   }
 });
 
-app.addEventListener('toggle', (event) => {
-  const target = event.target;
-  if (!(target instanceof HTMLDetailsElement)) {
-    return;
-  }
+app.addEventListener(
+  'toggle',
+  (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLDetailsElement)) {
+      return;
+    }
 
-  const accordionKey = target.dataset.accordion;
-  if (accordionKey === 'category' || accordionKey === 'alter' || accordionKey === 'semantic') {
-    state.accordionOpen[accordionKey] = target.open;
-  }
-});
+    const accordionKey = target.dataset.accordion;
+    if (accordionKey === 'category' || accordionKey === 'alter' || accordionKey === 'semantic') {
+      state.accordionOpen[accordionKey] = target.open;
+    }
+  },
+  true // 'toggle' bubbelt nicht, daher Capture-Phase für die Delegation nötig
+);
 
 async function bootstrap(): Promise<void> {
   render();
