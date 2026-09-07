@@ -34,8 +34,8 @@ Das Add-in bietet aktuell:
 
 ## Login und API
 
-- Das Add-in verwendet einen Bearer-Token.
-- Der Login läuft über Benutzername/E-Mail und Passwort; der Token wird im Client gespeichert.
+- Das Add-in verwendet intern einen Bearer-Token für alle API-Aufrufe.
+- Der Login läuft ausschliesslich über Benutzername/E-Mail und Passwort; der Token wird nach dem Login automatisch im Client gespeichert und ist nicht manuell editierbar.
 - Die API-Basis kann im Add-in im Feld „API-Basis“ eingegeben werden. Standard ist `https://wortlab.ch/api/v1`.
 
 ## Wichtige Dateien

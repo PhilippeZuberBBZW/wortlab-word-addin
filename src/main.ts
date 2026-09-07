@@ -114,8 +114,7 @@ function syncSearchStateFromForm(): void {
 
 function configFromForm(): AppConfig {
   const apiBaseUrl = (document.querySelector<HTMLInputElement>('#apiBaseUrl')?.value ?? '').trim();
-  const token = (document.querySelector<HTMLTextAreaElement>('#accessToken')?.value ?? '').trim();
-  return { apiBaseUrl, token };
+  return { apiBaseUrl, token: state.config.token };
 }
 
 function clearPasswordField(): void {
@@ -239,10 +238,6 @@ function render(): void {
               <input id="authPassword" type="password" placeholder="Passwort">
             </div>
           </div>
-          <div class="field">
-            <label for="accessToken">Bearer-Token (optional)</label>
-            <textarea id="accessToken" placeholder="Wird nach Login automatisch gesetzt oder manuell eingefügt">${escapeHtml(state.config.token)}</textarea>
-          </div>
           <div class="actions">
             <button type="button" data-role="login">Einloggen</button>
             <button type="button" data-role="save-config">Speichern</button>
@@ -363,7 +358,7 @@ async function connect(): Promise<void> {
     return;
   }
   if (!state.config.token) {
-    setStatus('Bitte zuerst einloggen oder einen Bearer-Token eintragen.', 'error');
+    setStatus('Bitte zuerst einloggen.', 'error');
     return;
   }
 
